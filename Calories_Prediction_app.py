@@ -4,7 +4,7 @@ import joblib
 import streamlit as st
 
 # Load Model
-model = joblib.load('C:/Users/chiom/Documents/Axia Africa Store/web scraping/Calories Prediction/Calories_prediction.pkl')
+model = joblib.load('Calories_prediction.pkl')
 
 def calories_prediction(input_data):
     column_names = ['Age', 'Height', 'Weight', 'Duration', 'Heart_Rate', 'Body_Temp']
