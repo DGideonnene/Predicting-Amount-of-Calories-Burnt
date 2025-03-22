@@ -35,7 +35,7 @@ def main():
     # Add Image
     #/mnt/data/alexander-red-d3bYmnZ0ank-unsplash (1).jpg
     #https://unsplash.com/photos/man-tying-his-shoes-d3bYmnZ0ank
-    st.image("https://unsplash.com/photos/man-tying-his-shoes-d3bYmnZ0ank", use_container_width=True)
+    st.image("alexander-red-d3bYmnZ0ank-unsplash (1).jpg", use_container_width=True)
     
     st.title("🔥 Calories Burnt Prediction 🔥")
     st.write("Enter your exercise details to estimate the calories you burn.")
