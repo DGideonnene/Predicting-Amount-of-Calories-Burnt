@@ -78,8 +78,7 @@ def main():
             st.write(prediction)  # Display error message as a string
         
         # Display GIF after prediction
-        st.image("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGl6Y3hlcndqYTIwc2wzdXd6bmNxa3M0ZTNhemx3d3hyNzNqeWg0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XeY6MgvUXdWF5in9I1/giphy.gif
-", use_container_width=True)
+        st.image("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGl6Y3hlcndqYTIwc2wzdXd6bmNxa3M0ZTNhemx3d3hyNzNqeWg0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
         
 if __name__ == '__main__':
     main()
