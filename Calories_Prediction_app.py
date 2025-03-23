@@ -32,15 +32,26 @@ def main():
         unsafe_allow_html=True,
     )
     
-    # Add Image
-    #/mnt/data/alexander-red-d3bYmnZ0ank-unsplash (1).jpg
-    #https://unsplash.com/photos/man-tying-his-shoes-d3bYmnZ0ank
-    st.image("alexander-red-d3bYmnZ0ank-unsplash (1).jpg", use_container_width=True)
+    # Header Image
+    st.image("header_image.jpg", use_container_width=True)
     
     st.title("🔥 Calories Burnt Prediction 🔥")
-    st.write("Enter your exercise details to estimate the calories you burn.")
+    st.write("Enter your details and exercise data to estimate the calories you burn.")
     
-    # Create input fields
+    # Personal Details Section
+    st.subheader("👤 Personal Details")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        name = st.text_input("Full Name")
+        age = st.text_input("Age")
+    
+    with col2:
+        gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+        activity_level = st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"])
+    
+    # Calories Prediction Section
+    st.subheader("🔥 Exercise Details")
     col1, col2, col3 = st.columns(3)
     inputs = []
     fields = ['Age', 'Height', 'Weight', 'Duration', 'Heart_Rate', 'Body_Temp']
@@ -49,7 +60,7 @@ def main():
         with [col1, col2, col3][i % 3]:
             value = st.text_input(f"{field.replace('_', ' ').capitalize()} (e.g. 25)", key=field)
             inputs.append(value)
-
+    
     prediction = ""
     
     if st.button("💪 Predict Calories Burnt"):
@@ -62,6 +73,9 @@ def main():
     if prediction:
         st.subheader("🏋️ Calories Burnt:")
         st.write(f"🔥 {prediction:.2f} kcal")
+        
+        # Display GIF after prediction
+        st.image("exercise_gif.gif", use_column_width=True)
 
 if __name__ == '__main__':
     main()
