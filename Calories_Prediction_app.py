@@ -63,7 +63,7 @@ def main():
     
     prediction = ""
     
-    if st.button("💪 Predict Calories Burnt"):
+   if st.button("💪 Predict Calories Burnt"):
     try:
         input_data = [float(value) for value in inputs]  # Convert inputs to float
         prediction = calories_prediction(input_data)
@@ -75,9 +75,10 @@ def main():
         st.write(f"🔥 {prediction:.2f} kcal")  
     else:
         st.write(prediction)  # Display error message as a string
-        
-        # Display GIF after prediction
-        st.image("exercise_gif.gif", use_column_width=True)
+    
+    # Display GIF after prediction
+    st.image("exercise_gif.gif", use_column_width=True)
+
 
 if __name__ == '__main__':
     main()
