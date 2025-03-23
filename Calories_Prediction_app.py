@@ -51,7 +51,7 @@ def main():
     # Header Image
     st.image("front_pic.jpg", use_container_width=True)
     
-    st.title("🔥 Torch & Track: Burn Calories Smarter! 🔥")
+    st.title("👟Torch & Track: Burn Calories Smarter!")
     st.write("Enter your details and exercise data to estimate the calories you burn.")
     
     # Personal Details Section
