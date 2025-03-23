@@ -33,7 +33,7 @@ def main():
     )
     
     # Header Image
-    st.image("https://unsplash.com/photos/man-tying-his-shoes-d3bYmnZ0ank", use_container_width=True)
+    st.image("front_pic.jpg", use_container_width=True)
     
     st.title("🔥 Calories Burnt Prediction 🔥")
     st.write("Enter your details and exercise data to estimate the calories you burn.")
