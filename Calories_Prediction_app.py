@@ -78,7 +78,7 @@ def main():
             st.write(prediction)  # Display error message as a string
         
         # Display GIF after prediction
-        st.image("exercise_gif.gif", use_column_width=True)
+        st.image("exercise_gif.gif", use_container_width=True)
 
 if __name__ == '__main__':
     main()
