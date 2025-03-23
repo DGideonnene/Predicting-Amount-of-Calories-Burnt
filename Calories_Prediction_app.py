@@ -62,23 +62,23 @@ def main():
             inputs.append(value)
     
     prediction = ""
-    
-   if st.button("💪 Predict Calories Burnt"):
-    try:
-        input_data = [float(value) for value in inputs]  # Convert inputs to float
-        prediction = calories_prediction(input_data)
-    except ValueError:
-        prediction = "⚠️ Please enter valid numeric values in all fields."
 
-    if isinstance(prediction, (int, float)):  # Check if it's a number
-        st.subheader("🏋️ Calories Burnt:")
-        st.write(f"🔥 {prediction:.2f} kcal")  
-    else:
-        st.write(prediction)  # Display error message as a string
-    
-    # Display GIF after prediction
-    st.image("exercise_gif.gif", use_column_width=True)
+    # Proper indentation applied here 👇
+    if st.button("💪 Predict Calories Burnt"):
+        try:
+            input_data = [float(value) for value in inputs]  # Convert inputs to float
+            prediction = calories_prediction(input_data)
+        except ValueError:
+            prediction = "⚠️ Please enter valid numeric values in all fields."
 
+        if isinstance(prediction, (int, float)):  # Check if it's a number
+            st.subheader("🏋️ Calories Burnt:")
+            st.write(f"🔥 {prediction:.2f} kcal")  
+        else:
+            st.write(prediction)  # Display error message as a string
+        
+        # Display GIF after prediction
+        st.image("exercise_gif.gif", use_column_width=True)
 
 if __name__ == '__main__':
     main()
