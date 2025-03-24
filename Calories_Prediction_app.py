@@ -54,7 +54,9 @@ def save_user_data(user_details):
     df = pd.DataFrame([user_details])
     if os.path.exists(data_file):
         try:
-            df.to_csv(data_file, mode='a', header=False, index=False)
+            existing_df = pd.read_csv(data_file, on_bad_lines='skip')
+            existing_df = existing_df.append(df, ignore_index=True)
+            existing_df.to_csv(data_file, index=False)
         except pd.errors.ParserError:
             st.error("Corrupted user data file. Please reset.")
     else:
@@ -153,13 +155,13 @@ def main():
                     save_user_data(user_details)
                     st.subheader("🏋️ Calories Burnt:")
                     st.write(f"🔥 {prediction:.2f} kcal")  
-                    
-                    # Display GIF
-                    st.image("https://media2.giphy.com/media/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
                 except ValueError:
                     st.warning("⚠️ Please enter valid numeric values in all fields.")
-        
-        # Display user's saved records only
+                
+        # Display GIF after prediction
+        st.image("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGl6Y3hlcndqYTIwc2wzdXd6bmNxa3M0ZTNhemx3d3hyNzNqeWg0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
+    
+        # Display past records for the logged-in user
         st.subheader("📜 Your Saved Records")
         user_data = load_user_data(st.session_state.user_email)
         if not user_data.empty:
