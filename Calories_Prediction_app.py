@@ -26,14 +26,15 @@ def save_user_data(user_details):
     else:
         df.to_csv(data_file, index=False)
 
-def load_user_data():
+def load_user_data(name):
     if os.path.exists(data_file):
-        return pd.read_csv(data_file)
+        df = pd.read_csv(data_file)
+        return df[df['Name'] == name]  # Show only the logged-in user's data
     return pd.DataFrame()
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="Calories Prediction", layout="wide")
+    st.set_page_config(page_title="Torch & Track: Burn Calories Smarter!", layout="wide")
     
     # Custom styling
     st.markdown(
@@ -51,7 +52,7 @@ def main():
     # Header Image
     st.image("front_pic.jpg", use_container_width=True)
     
-    st.title("👟Torch & Track: Burn Calories Smarter!")
+    st.title("👟 Torch & Track: Burn Calories Smarter!")
     st.write("Enter your details and exercise data to estimate the calories you burn.")
     
     # Personal Details Section
@@ -60,7 +61,7 @@ def main():
     
     with col1:
         name = st.text_input("Full Name")
-        age = st.text_input("Age")
+        age = st.text_input("Age (years)")
     
     with col2:
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
@@ -70,11 +71,17 @@ def main():
     st.subheader("🏃🏾‍➡ Exercise Details")
     col1, col2, col3 = st.columns(3)
     inputs = []
-    fields = ['Height', 'Weight', 'Duration', 'Heart_Rate', 'Body_Temp']
+    fields = {
+        'Height': 'Height (cm)',
+        'Weight': 'Weight (kg)',
+        'Duration': 'Duration (minutes)',
+        'Heart_Rate': 'Heart Rate (bpm)',
+        'Body_Temp': 'Body Temp (°C)'
+    }
 
-    for i, field in enumerate(fields):
+    for i, (field, label) in enumerate(fields.items()):
         with [col1, col2, col3][i % 3]:
-            value = st.text_input(f"{field.replace('_', ' ').capitalize()} (e.g. 25)", key=field)
+            value = st.text_input(f"{label}", key=field)
             inputs.append(value)
     
     prediction = ""
@@ -100,13 +107,14 @@ def main():
         # Display GIF after prediction
         st.image("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGl6Y3hlcndqYTIwc2wzdXd6bmNxa3M0ZTNhemx3d3hyNzNqeWg0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
     
-    # Display past records
-    st.subheader("📜 Saved Records")
-    user_data = load_user_data()
-    if not user_data.empty:
-        st.dataframe(user_data)
-    else:
-        st.write("No records found.")
+    # Display past records for the logged-in user
+    st.subheader("📜 Your Saved Records")
+    if name:
+        user_data = load_user_data(name)
+        if not user_data.empty:
+            st.dataframe(user_data)
+        else:
+            st.write("No records found for you.")
 
 if __name__ == '__main__':
     main()
