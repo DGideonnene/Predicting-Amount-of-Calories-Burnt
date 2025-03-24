@@ -33,7 +33,8 @@ def register_user(email, password):
             existing_df = pd.read_csv(auth_file, on_bad_lines='skip')
             if 'Email' in existing_df.columns and (existing_df['Email'] == email).any():
                 return False
-            new_user.to_csv(auth_file, mode='a', header=False, index=False)
+            existing_df = pd.concat([existing_df, new_user], ignore_index=True)
+            existing_df.to_csv(auth_file, index=False)
         except pd.errors.ParserError:
             st.error("Corrupted user authentication file. Please reset.")
     else:
@@ -47,7 +48,6 @@ def calories_prediction(input_data):
     pred = model.predict(input_df)
     return pred[0] ** 2
 
-# File to store user data
 data_file = "user_data.csv"
 
 def save_user_data(user_details):
@@ -55,7 +55,7 @@ def save_user_data(user_details):
     if os.path.exists(data_file):
         try:
             existing_df = pd.read_csv(data_file, on_bad_lines='skip')
-            existing_df = existing_df.append(df, ignore_index=True)
+            existing_df = pd.concat([existing_df, df], ignore_index=True)
             existing_df.to_csv(data_file, index=False)
         except pd.errors.ParserError:
             st.error("Corrupted user data file. Please reset.")
@@ -67,12 +67,11 @@ def load_user_data(email):
         try:
             df = pd.read_csv(data_file, on_bad_lines='skip')
             if 'Email' in df.columns:
-                return df[df['Email'] == email]  # Show only the logged-in user's data
+                return df[df['Email'] == email]
         except pd.errors.ParserError:
             st.error("Corrupted user data file. Please reset.")
     return pd.DataFrame()
 
-# Streamlit UI
 def main():
     st.set_page_config(page_title="Torch & Track: Burn Calories Smarter!", layout="wide")
     
@@ -81,7 +80,6 @@ def main():
     if 'user_email' not in st.session_state:
         st.session_state.user_email = ""
     
-    # User Authentication
     st.sidebar.subheader("🔐 Login or Register")
     auth_choice = st.sidebar.radio("Select an option", ["Login", "Register"])
     email = st.sidebar.text_input("Email")
@@ -109,7 +107,6 @@ def main():
         st.title("👟 Torch & Track: Burn Calories Smarter!")
         st.write("Enter your details and exercise data to estimate the calories you burn.")
         
-        # Personal Details Section
         st.subheader("👤 Personal Details")
         col1, col2 = st.columns(2)
         
@@ -121,26 +118,15 @@ def main():
             gender = st.selectbox("Gender", ["Male", "Female", "Other"])
             activity_level = st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"])
         
-        st.write("🔹 **Units:** Height (cm), Weight (kg), Temperature (°C), Heart Rate (bpm)")
-        
-        # Calories Prediction Section
         st.subheader("🏃🏾‍➡ Exercise Details")
         col1, col2, col3 = st.columns(3)
         inputs = []
-        fields = {
-            'Height': 'Height (cm)',
-            'Weight': 'Weight (kg)',
-            'Duration': 'Duration (minutes)',
-            'Heart_Rate': 'Heart Rate (bpm)',
-            'Body_Temp': 'Body Temp (°C)'
-        }
+        fields = {'Height': 'Height (cm)', 'Weight': 'Weight (kg)', 'Duration': 'Duration (minutes)', 'Heart_Rate': 'Heart Rate (bpm)', 'Body_Temp': 'Body Temp (°C)'}
 
         for i, (field, label) in enumerate(fields.items()):
             with [col1, col2, col3][i % 3]:
                 value = st.text_input(f"{label}", key=field)
                 inputs.append(value)
-        
-        prediction = ""
         
         if st.button("💪 Predict Calories Burnt"):
             if "" in inputs or not age:
@@ -149,19 +135,15 @@ def main():
                 try:
                     input_data = [float(age)] + [float(value) for value in inputs]
                     prediction = calories_prediction(input_data)
-                    user_details = {"Email": st.session_state.user_email, "Name": name, "Age": age, "Gender": gender, "Activity Level": activity_level, 
-                                    "Height": inputs[0], "Weight": inputs[1], "Duration": inputs[2],
-                                    "Heart Rate": inputs[3], "Body Temp": inputs[4], "Calories Burnt": prediction}
+                    user_details = {"Email": st.session_state.user_email, "Name": name, "Age": age, "Gender": gender, "Activity Level": activity_level, "Height": inputs[0], "Weight": inputs[1], "Duration": inputs[2], "Heart Rate": inputs[3], "Body Temp": inputs[4], "Calories Burnt": prediction}
                     save_user_data(user_details)
                     st.subheader("🏋️ Calories Burnt:")
                     st.write(f"🔥 {prediction:.2f} kcal")  
                 except ValueError:
                     st.warning("⚠️ Please enter valid numeric values in all fields.")
                 
-        # Display GIF after prediction
-        st.image("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGl6Y3hlcndqYTIwc2wzdXd6bmNxa3M0ZTNhemx3d3hyNzNqeWg0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
+        st.image("https://media2.giphy.com/media/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
     
-        # Display past records for the logged-in user
         st.subheader("📜 Your Saved Records")
         user_data = load_user_data(st.session_state.user_email)
         if not user_data.empty:
