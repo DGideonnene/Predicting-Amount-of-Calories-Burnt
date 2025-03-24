@@ -13,8 +13,11 @@ def hash_password(password):
 
 def authenticate_user(email, password):
     auth_file = "user_auth.csv"
-    if os.path.exists(auth_file):
+    if os.path.exists(auth_file) and os.stat(auth_file).st_size > 0:
         df = pd.read_csv(auth_file)
+        if 'Email' not in df.columns or 'Password' not in df.columns:
+            st.sidebar.error("⚠️ Corrupted authentication file!")
+            return False
         hashed_pw = hash_password(password)
         if ((df['Email'] == email) & (df['Password'] == hashed_pw)).any():
             return True
@@ -47,6 +50,8 @@ def save_user_data(user_details):
     df = pd.DataFrame([user_details])
     if os.path.exists(data_file):
         existing_df = pd.read_csv(data_file)
+        if 'Email' not in existing_df.columns:
+            return  # Prevent saving to corrupted file
         if not existing_df[(existing_df['Email'] == user_details["Email"])].empty:
             return  # Prevent duplicate entries
         df.to_csv(data_file, mode='a', header=False, index=False)
@@ -54,8 +59,11 @@ def save_user_data(user_details):
         df.to_csv(data_file, index=False)
 
 def load_user_data(email):
-    if os.path.exists(data_file):
+    if os.path.exists(data_file) and os.stat(data_file).st_size > 0:
         df = pd.read_csv(data_file)
+        if 'Email' not in df.columns:
+            st.error("⚠️ Corrupted user data file!")
+            return pd.DataFrame()
         return df[df['Email'] == email]  # Show only the logged-in user's data
     return pd.DataFrame()
 
