@@ -14,11 +14,14 @@ def hash_password(password):
 def authenticate_user(email, password):
     auth_file = "user_auth.csv"
     if os.path.exists(auth_file):
-        df = pd.read_csv(auth_file)
-        hashed_pw = hash_password(password)
-        if 'Email' in df.columns and 'Password' in df.columns:
-            if ((df['Email'] == email) & (df['Password'] == hashed_pw)).any():
-                return True
+        try:
+            df = pd.read_csv(auth_file, on_bad_lines='skip')
+            hashed_pw = hash_password(password)
+            if 'Email' in df.columns and 'Password' in df.columns:
+                if ((df['Email'] == email) & (df['Password'] == hashed_pw)).any():
+                    return True
+        except pd.errors.ParserError:
+            st.error("Corrupted user authentication file. Please reset.")
     return False
 
 def register_user(email, password):
@@ -26,10 +29,13 @@ def register_user(email, password):
     hashed_pw = hash_password(password)
     new_user = pd.DataFrame([[email, hashed_pw]], columns=['Email', 'Password'])
     if os.path.exists(auth_file):
-        existing_df = pd.read_csv(auth_file)
-        if 'Email' in existing_df.columns and (existing_df['Email'] == email).any():
-            return False
-        new_user.to_csv(auth_file, mode='a', header=False, index=False)
+        try:
+            existing_df = pd.read_csv(auth_file, on_bad_lines='skip')
+            if 'Email' in existing_df.columns and (existing_df['Email'] == email).any():
+                return False
+            new_user.to_csv(auth_file, mode='a', header=False, index=False)
+        except pd.errors.ParserError:
+            st.error("Corrupted user authentication file. Please reset.")
     else:
         new_user.to_csv(auth_file, index=False)
     return True
@@ -47,25 +53,30 @@ data_file = "user_data.csv"
 def save_user_data(user_details):
     df = pd.DataFrame([user_details])
     if os.path.exists(data_file):
-        existing_df = pd.read_csv(data_file)
-        if 'Email' in existing_df.columns and not existing_df[(existing_df['Email'] == user_details["Email"])].empty:
-            return  # Prevent duplicate entries
-        df.to_csv(data_file, mode='a', header=False, index=False)
+        try:
+            existing_df = pd.read_csv(data_file, on_bad_lines='skip')
+            if 'Email' in existing_df.columns and not existing_df[(existing_df['Email'] == user_details["Email"])].empty:
+                return  # Prevent duplicate entries
+            df.to_csv(data_file, mode='a', header=False, index=False)
+        except pd.errors.ParserError:
+            st.error("Corrupted user data file. Please reset.")
     else:
         df.to_csv(data_file, index=False)
 
 def load_user_data(email):
     if os.path.exists(data_file):
-        df = pd.read_csv(data_file)
-        if 'Email' in df.columns:
-            return df[df['Email'] == email]  # Show only the logged-in user's data
+        try:
+            df = pd.read_csv(data_file, on_bad_lines='skip')
+            if 'Email' in df.columns:
+                return df[df['Email'] == email]  # Show only the logged-in user's data
+        except pd.errors.ParserError:
+            st.error("Corrupted user data file. Please reset.")
     return pd.DataFrame()
 
 # Streamlit UI
 def main():
     st.set_page_config(page_title="Torch & Track: Burn Calories Smarter!", layout="wide")
     
-    # Maintain login state
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
     if 'user_email' not in st.session_state:
@@ -92,23 +103,8 @@ def main():
                 st.session_state.user_email = email
             else:
                 st.sidebar.error("⚠️ Invalid credentials!")
-                st.session_state.logged_in = False
-    
+
     if st.session_state.logged_in:
-        # Custom styling
-        st.markdown(
-            """
-            <style>
-                .main {background-color: #eef2f3;}
-                h1 {color: #ff5722; text-align: center;}
-                .stButton>button {width: 100%; background-color: #ff5722; color: white; font-size: 16px;}
-                .stTextInput>label {font-weight: bold;}
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        # Header Image
         st.image("front_pic.jpg", use_container_width=True)
         
         st.title("👟 Torch & Track: Burn Calories Smarter!")
@@ -146,8 +142,7 @@ def main():
                 inputs.append(value)
         
         prediction = ""
-
-        # Save details and predict calories
+        
         if st.button("💪 Predict Calories Burnt"):
             if "" in inputs or not age:
                 st.warning("⚠️ Please fill in all fields with valid numeric values.")
@@ -159,19 +154,10 @@ def main():
                                     "Height": inputs[0], "Weight": inputs[1], "Duration": inputs[2],
                                     "Heart Rate": inputs[3], "Body Temp": inputs[4], "Calories Burnt": prediction}
                     save_user_data(user_details)
-                    
                     st.subheader("🏋️ Calories Burnt:")
                     st.write(f"🔥 {prediction:.2f} kcal")  
                 except ValueError:
                     st.warning("⚠️ Please enter valid numeric values in all fields.")
-                
-        # Display past records for the logged-in user
-        st.subheader("📜 Your Saved Records")
-        user_data = load_user_data(st.session_state.user_email)
-        if not user_data.empty:
-            st.dataframe(user_data)
-        else:
-            st.write("No records found for you.")
-
+    
 if __name__ == '__main__':
     main()
