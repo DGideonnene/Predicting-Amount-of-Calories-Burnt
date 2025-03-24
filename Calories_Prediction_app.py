@@ -69,6 +69,8 @@ def main():
     email = st.sidebar.text_input("Email")
     password = st.sidebar.text_input("Password", type="password")
     
+    logged_in = False  # Ensure logged_in is initialized
+    
     if auth_choice == "Register":
         if st.sidebar.button("Register"):
             if register_user(email, password):
@@ -83,11 +85,10 @@ def main():
                 logged_in = True
             else:
                 st.sidebar.error("⚠️ Invalid credentials!")
-                logged_in = False
-    else:
-        logged_in = False
-    
+
     if logged_in:
+        # Continue with the main UI...
+
         # Custom styling
         st.markdown(
             """
