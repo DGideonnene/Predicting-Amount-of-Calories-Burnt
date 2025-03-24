@@ -54,9 +54,6 @@ def save_user_data(user_details):
     df = pd.DataFrame([user_details])
     if os.path.exists(data_file):
         try:
-            existing_df = pd.read_csv(data_file, on_bad_lines='skip')
-            if 'Email' in existing_df.columns and not existing_df[(existing_df['Email'] == user_details["Email"])].empty:
-                return  # Prevent duplicate entries
             df.to_csv(data_file, mode='a', header=False, index=False)
         except pd.errors.ParserError:
             st.error("Corrupted user data file. Please reset.")
@@ -156,8 +153,19 @@ def main():
                     save_user_data(user_details)
                     st.subheader("🏋️ Calories Burnt:")
                     st.write(f"🔥 {prediction:.2f} kcal")  
+                    
+                    # Display GIF
+                    st.image("https://media2.giphy.com/media/XeY6MgvUXdWF5in9I1/giphy.gif", use_container_width=True)
                 except ValueError:
                     st.warning("⚠️ Please enter valid numeric values in all fields.")
-    
+        
+        # Display user's saved records only
+        st.subheader("📜 Your Saved Records")
+        user_data = load_user_data(st.session_state.user_email)
+        if not user_data.empty:
+            st.dataframe(user_data)
+        else:
+            st.write("No records found for you.")
+
 if __name__ == '__main__':
     main()
