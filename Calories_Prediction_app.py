@@ -13,11 +13,8 @@ def hash_password(password):
 
 def authenticate_user(email, password):
     auth_file = "user_auth.csv"
-    if os.path.exists(auth_file) and os.stat(auth_file).st_size > 0:
+    if os.path.exists(auth_file):
         df = pd.read_csv(auth_file)
-        if 'Email' not in df.columns or 'Password' not in df.columns:
-            st.sidebar.error("⚠️ Corrupted authentication file!")
-            return False
         hashed_pw = hash_password(password)
         if ((df['Email'] == email) & (df['Password'] == hashed_pw)).any():
             return True
@@ -50,8 +47,6 @@ def save_user_data(user_details):
     df = pd.DataFrame([user_details])
     if os.path.exists(data_file):
         existing_df = pd.read_csv(data_file)
-        if 'Email' not in existing_df.columns:
-            return  # Prevent saving to corrupted file
         if not existing_df[(existing_df['Email'] == user_details["Email"])].empty:
             return  # Prevent duplicate entries
         df.to_csv(data_file, mode='a', header=False, index=False)
@@ -59,11 +54,8 @@ def save_user_data(user_details):
         df.to_csv(data_file, index=False)
 
 def load_user_data(email):
-    if os.path.exists(data_file) and os.stat(data_file).st_size > 0:
+    if os.path.exists(data_file):
         df = pd.read_csv(data_file)
-        if 'Email' not in df.columns:
-            st.error("⚠️ Corrupted user data file!")
-            return pd.DataFrame()
         return df[df['Email'] == email]  # Show only the logged-in user's data
     return pd.DataFrame()
 
@@ -71,13 +63,16 @@ def load_user_data(email):
 def main():
     st.set_page_config(page_title="Torch & Track: Burn Calories Smarter!", layout="wide")
     
+    # Initialize session state
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+        st.session_state.email = ""
+    
     # User Authentication
     st.sidebar.subheader("🔐 Login or Register")
     auth_choice = st.sidebar.radio("Select an option", ["Login", "Register"])
     email = st.sidebar.text_input("Email")
     password = st.sidebar.text_input("Password", type="password")
-    
-    logged_in = False  # Ensure logged_in is initialized
     
     if auth_choice == "Register":
         if st.sidebar.button("Register"):
@@ -90,13 +85,13 @@ def main():
         if st.sidebar.button("Login"):
             if authenticate_user(email, password):
                 st.sidebar.success("✅ Login successful!")
-                logged_in = True
+                st.session_state.logged_in = True
+                st.session_state.email = email
             else:
                 st.sidebar.error("⚠️ Invalid credentials!")
-
-    if logged_in:
-        # Continue with the main UI...
-
+                st.session_state.logged_in = False
+    
+    if st.session_state.logged_in:
         # Custom styling
         st.markdown(
             """
@@ -157,7 +152,7 @@ def main():
                 try:
                     input_data = [float(age)] + [float(value) for value in inputs]  # Convert inputs to float
                     prediction = calories_prediction(input_data)
-                    user_details = {"Email": email, "Name": name, "Age": age, "Gender": gender, "Activity Level": activity_level, 
+                    user_details = {"Email": st.session_state.email, "Name": name, "Age": age, "Gender": gender, "Activity Level": activity_level, 
                                     "Height": inputs[0], "Weight": inputs[1], "Duration": inputs[2],
                                     "Heart Rate": inputs[3], "Body Temp": inputs[4], "Calories Burnt": prediction}
                     save_user_data(user_details)
@@ -166,10 +161,10 @@ def main():
                     st.write(f"🔥 {prediction:.2f} kcal")  
                 except ValueError:
                     st.warning("⚠️ Please enter valid numeric values in all fields.")
-                
+        
         # Display past records for the logged-in user
         st.subheader("📜 Your Saved Records")
-        user_data = load_user_data(email)
+        user_data = load_user_data(st.session_state.email)
         if not user_data.empty:
             st.dataframe(user_data)
         else:
